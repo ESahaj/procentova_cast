@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VÝPOČET PROCENTOVÉ ČÁSTI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.8rem;
+      text-align: center;
+    }
+    .question {
+      font-size: 1.4rem;
+      margin: 20px 0;
+      text-align: center;
+      line-height: 1.5;
+      background: #e5e7eb;
+      padding: 16px;
+      border-radius: 12px;
+    }
+    .answer-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    input[type="number"], input[type="text"] {
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      width: 180px;
+    }
+    button {
+      padding: 12px 18px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+    }
+    button:hover { opacity: 0.95; }
+    .result, .score {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 1.05rem;
+    }
+    .calculator {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .calculator h2 {
+      text-align: center;
+      font-size: 1.2rem;
+    }
+    .calc-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .calc-display {
+      width: 100%;
+      max-width: 320px;
+      text-align: right;
+      font-size: 1.1rem;
+    }
+    .calc-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .calc-buttons button {
+      background: #374151;
+      padding: 14px;
+    }
+    @media (max-width: 600px) {
+      .question { font-size: 1.15rem; }
+      input[type="number"] { width: 100%; }
+      .answer-row button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>VÝPOČET PROCENTOVÉ ČÁSTI</h1>
+
+    <div class="score"><span id="progress">1/10</span></div>
+
+    <div class="question" id="question"></div>
+    <div class="result">Výsledek zaokrouhli na 1 desetinné místo.</div>
+
+    <div class="answer-row">
+      <input type="number" id="answer" step="0.1" placeholder="Výsledek v Kč" />
+      <button onclick="checkAnswer()">Ověřit</button>
+      <button onclick="newQuestion()">Další příklad</button>
+    </div>
+
+    <div class="result" id="result"></div>
+
+    <div class="calculator">
+      <h2>Základní kalkulačka</h2>
+      <div class="calc-row">
+        <input type="text" id="calcDisplay" class="calc-display" readonly />
+      </div>
+      <div class="calc-buttons">
+        <button onclick="calcAdd('7')">7</button>
+        <button onclick="calcAdd('8')">8</button>
+        <button onclick="calcAdd('9')">9</button>
+        <button onclick="calcAdd('/')">÷</button>
+
+        <button onclick="calcAdd('4')">4</button>
+        <button onclick="calcAdd('5')">5</button>
+        <button onclick="calcAdd('6')">6</button>
+        <button onclick="calcAdd('*')">×</button>
+
+        <button onclick="calcAdd('1')">1</button>
+        <button onclick="calcAdd('2')">2</button>
+        <button onclick="calcAdd('3')">3</button>
+        <button onclick="calcAdd('-')">−</button>
+
+        <button onclick="calcAdd('0')">0</button>
+        <button onclick="calcAdd('.')">.</button>
+        <button onclick="calcCalculate()">=</button>
+        <button onclick="calcAdd('+')">+</button>
+      </div>
+      <div class="calc-row" style="margin-top:8px;">
+        <button onclick="calcClear()">Vymazat</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentAnswer = 0;
+    let currentPercent = 0;
+    let currentAmount = 0;
+    let currentQuestion = 1;
+    const totalQuestions = 10;
+    let score = 0;
+    let history = [];
+
+    function round1(num) {
+      return Math.round(num * 10) / 10;
+    }
+
+    function newQuestion() {
+      if (currentQuestion > totalQuestions) {
+        showSummary();
+        return;
+      }
+
+      currentPercent = Math.floor(Math.random() * 146) + 5;
+      currentAmount = Math.floor(Math.random() * 900) + 100;
+      currentAnswer = round1((currentPercent / 100) * currentAmount);
+
+      document.getElementById('progress').textContent = `${currentQuestion}/${totalQuestions}`;
+      document.getElementById('question').textContent = `Příklad ${currentPercent}% z ${currentAmount} Kč = ? Kč`;
+      document.getElementById('answer').value = '';
+      document.getElementById('result').textContent = '';
+    }
+
+    function checkAnswer() {
+      const userRaw = parseFloat(document.getElementById('answer').value);
+      const result = document.getElementById('result');
+
+      if (isNaN(userRaw)) {
+        result.textContent = 'Zadej číslo.';
+        return;
+      }
+
+      const user = round1(userRaw);
+      const correct = Math.abs(user - currentAnswer) < 0.05;
+
+      history.push({
+        question: `${currentPercent}% z ${currentAmount} Kč`,
+        user: user.toFixed(1),
+        correctAnswer: currentAnswer.toFixed(1),
+        correct
+      });
+
+      if (correct) {
+        score++;
+                result.textContent = `Správně! Výsledek je ${currentAnswer.toFixed(1)} Kč.`;
+      } else {
+        result.textContent = `Špatně. Správný výsledek je ${currentAnswer.toFixed(1)} Kč.`;
+      }
+
+      currentQuestion++;
+
+      setTimeout(() => {
+        newQuestion();
+      }, 900);
+    }
+
+    function showSummary() {
+      const container = document.querySelector('.container');
+
+      let summaryHtml = `<h1>Hotovo!</h1>`;
+      summaryHtml += `<div class="result"><strong>Výsledek: ${score} z ${totalQuestions}</strong></div>`;
+      summaryHtml += `<div style="margin-top:20px;">`;
+
+      history.forEach(item => {
+        summaryHtml += `
+          <div style="padding:10px; margin-bottom:8px; border-radius:10px; background:${item.correct ? '#dcfce7' : '#fee2e2'};">
+            <strong>${item.question}</strong><br>
+            Tvoje odpověď: ${item.user} Kč<br>
+            Správná odpověď: ${item.correctAnswer} Kč
+          </div>
+        `;
+      });
+
+      summaryHtml += `</div>
+        <div style="text-align:center; margin-top:18px;">
+          <button onclick="restartGame()">Hrát znovu</button>
+        </div>`;
+
+      container.innerHTML = summaryHtml;
+    }
+
+    function restartGame() {
+      location.reload();
+    }
+
+    function calcAdd(value) {
+      document.getElementById('calcDisplay').value += value;
+    }
+
+    function calcClear() {
+      document.getElementById('calcDisplay').value = '';
+    }
+
+    function calcCalculate() {
+      const display = document.getElementById('calcDisplay');
+      try {
+        display.value = Function('return ' + display.value)().toString();
+      } catch {
+        display.value = 'Chyba';
+      }
+    }
+
+    newQuestion();
+  </script>
+</body>
+</html>
